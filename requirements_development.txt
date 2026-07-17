@@ -1,2 +1,4 @@
+-r requirements.txt
+
 PyGObject-stubs==1.0.0
 flake8==7.1.1
