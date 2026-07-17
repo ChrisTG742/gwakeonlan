@@ -24,9 +24,7 @@ from gwakeonlan.constants import (APP_NAME,
                                   APP_VERSION,
                                   VERBOSE_LEVEL_QUIET,
                                   VERBOSE_LEVEL_NORMAL,
-                                  VERBOSE_LEVEL_MAX,
-                                  WAKEUP_NAME)
-
+                                  VERBOSE_LEVEL_MAX)
 
 class CommandLineOptions(object):
     """
