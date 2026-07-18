@@ -120,6 +120,9 @@ class UIMain(UIBase):
         # Restore the saved size and position
         self.settings.restore_window_position(window=self.ui.window,
                                               section=SECTION_WINDOW_NAME)
+        # Handle wakeup_name option if provided
+        if self.options.wakeup_name:
+            self.schedule_wakeup_on_load(self.options.wakeup_name)
 
     def run(self):
         """Show the UI"""
@@ -127,6 +130,21 @@ class UIMain(UIBase):
         if self.options.autotest:
             GLib.timeout_add(500, self.do_autotests)
         self.ui.window.show_all()
+
+    def schedule_wakeup_on_load(self, machine_name):
+        """Schedule the wakeup of a machine by name after UI is loaded"""
+        GLib.timeout_add(100, self.do_wakeup_machine, machine_name)
+
+    def do_wakeup_machine(self, machine_name):
+        """Wake up a machine by name if it exists"""
+        if machine_name in self.model_machines.rows:
+            treeiter = self.model_machines.rows[machine_name]
+            logging.info(f'Waking up machine: {machine_name}')
+            self.do_turn_on(treeiter)
+            return False  # Don't repeat the timeout
+        else:
+            logging.warning(f'Machine not found: {machine_name}')
+            return False
 
     def do_autotests(self):
         """Perform a series of autotests"""
