@@ -123,6 +123,9 @@ class UIMain(UIBase):
         # Handle wakeup_name option if provided
         if self.options.wakeup_name:
             self.schedule_wakeup_on_load(self.options.wakeup_name)
+        else:
+            # Auto-start machines marked with auto_start=True
+            self.schedule_auto_start_machines()
 
     def run(self):
         """Show the UI"""
@@ -145,6 +148,19 @@ class UIMain(UIBase):
         else:
             logging.warning(f'Machine not found: {machine_name}')
             return False
+
+    def schedule_auto_start_machines(self):
+        """Schedule auto-start for machines marked with auto_start=True"""
+        GLib.timeout_add(100, self.do_auto_start_machines)
+
+    def do_auto_start_machines(self):
+        """Auto-start all machines marked with auto_start=True"""
+        for machine_name in list(self.model_machines.rows.keys()):
+            treeiter = self.model_machines.rows[machine_name]
+            if self.model_machines.get_auto_start(treeiter=treeiter):
+                logging.info(f'Auto-starting machine: {machine_name}')
+                self.do_turn_on(treeiter)
+        return False  # Don't repeat the timeout
 
     def do_autotests(self):
         """Perform a series of autotests"""
@@ -225,7 +241,8 @@ class UIMain(UIBase):
         self.detail.do_load_data(machine_name='',
                                  mac_address='',
                                  portnr=DEFAULT_UDP_PORT,
-                                 destination=BROADCAST_ADDRESS)
+                                 destination=BROADCAST_ADDRESS,
+                                 auto_start=False)
         # Check if the OK button in the dialog was pressed
         if self.detail.show() == Gtk.ResponseType.OK:
             self.model_machines.add_data(
@@ -234,7 +251,8 @@ class UIMain(UIBase):
                     mac_address=self.detail.do_get_mac_address(),
                     port_number=self.detail.do_get_port_number(),
                     destination=self.detail.do_get_destination(),
-                    icon=self.icon_empty))
+                    icon=self.icon_empty,
+                    auto_start=self.detail.do_get_auto_start()))
             # Automatically select the last inserted item
             self.ui.treeview_machines.set_cursor(
                 len(self.model_machines) - 1)
@@ -247,7 +265,8 @@ class UIMain(UIBase):
                 self.model_machines.get_machine_name(treeiter=treeiter),
                 self.model_machines.get_mac_address(treeiter=treeiter),
                 self.model_machines.get_port_number(treeiter=treeiter),
-                self.model_machines.get_destination(treeiter=treeiter)
+                self.model_machines.get_destination(treeiter=treeiter),
+                self.model_machines.get_auto_start(treeiter=treeiter)
             )
             if self.detail.show() == Gtk.ResponseType.OK:
                 self.model_machines.set_machine_name(
@@ -262,6 +281,9 @@ class UIMain(UIBase):
                 self.model_machines.set_destination(
                     treeiter=treeiter,
                     value=self.detail.do_get_destination())
+                self.model_machines.set_auto_start(
+                    treeiter=treeiter,
+                    value=self.detail.do_get_auto_start())
 
     def on_action_delete_activate(self, widget):
         """Delete the selected machine"""
@@ -355,6 +377,12 @@ class UIMain(UIBase):
         self.model_machines.set_selected(
             treeiter=treeiter,
             value=not self.model_machines.get_selected(treeiter=treeiter))
+
+    def on_cell_auto_start_toggled(self, renderer, treeiter, data=None):
+        """Toggle the auto-start flag for an item"""
+        self.model_machines.set_auto_start(
+            treeiter=treeiter,
+            value=not self.model_machines.get_auto_start(treeiter=treeiter))
 
     def on_treeview_machines_button_release_event(self, widget, event):
         if event.button == Gdk.BUTTON_SECONDARY:

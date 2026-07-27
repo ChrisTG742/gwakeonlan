@@ -336,6 +336,8 @@
       <column type="gint"/>
       <!-- column-name colIcon -->
       <column type="GdkPixbuf"/>
+      <!-- column-name colAutoStart -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkApplicationWindow" id="window">
@@ -442,6 +444,20 @@
                   <attributes>
                     <attribute name="text">5</attribute>
                   </attributes>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="column_auto_start">
+                <property name="resizable">True</property>
+                <property name="title">Auto-start</property>
+                <property name="sort-column-id">7</property>
+                <child>
+                  <object class="GtkCellRendererToggle" id="cell_auto_start"/>
+                  <attributes>
+                    <attribute name="active">7</attribute>
+                  </attributes>
+                  <signal name="toggled" handler="on_cell_auto_start_toggled" swapped="no"/>
                 </child>
               </object>
             </child>
