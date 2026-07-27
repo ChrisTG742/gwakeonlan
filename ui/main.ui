@@ -453,11 +453,12 @@
                 <property name="title">Auto-start</property>
                 <property name="sort-column-id">7</property>
                 <child>
-                  <object class="GtkCellRendererToggle" id="cell_auto_start"/>
+                  <object class="GtkCellRendererToggle" id="cell_auto_start">
+                    <signal name="toggled" handler="on_cell_auto_start_toggled" swapped="no"/>
+                  </object>
                   <attributes>
                     <attribute name="active">7</attribute>
                   </attributes>
-                  <signal name="toggled" handler="on_cell_auto_start_toggled" swapped="no"/>
                 </child>
               </object>
             </child>
